@@ -3,13 +3,12 @@
 # Copy this file to .github/workflows/closure-audit.yml in your repository.
 #
 # Token notes:
-# - The default GITHUB_TOKEN works for SINGLE-REPOSITORY audits on repos
-#   where GitHub Advanced Security / secret scanning is enabled, with the
-#   `security-events: read` permission below.
-# - ORGANIZATION-level audits (`org:` input) need a fine-grained PAT or
-#   GitHub App token with organization-wide "Secret scanning alerts: read"
-#   access. Store it as a secret (e.g. GC_AUDIT_TOKEN) and pass it as
-#   GITHUB_TOKEN to the action.
+# - The default GITHUB_TOKEN CANNOT read secret-scanning or Dependabot
+#   alerts (403: Resource not accessible by integration). Create a
+#   fine-grained PAT with "Secret scanning alerts: read" (and Dependabot/
+#   code-scanning read if auditing those families) for the repos or org in
+#   scope, store it as a secret (e.g. GC_AUDIT_TOKEN), and pass it as
+#   GITHUB_TOKEN to the action, as shown below.
 
 name: Ground Cyber Closure Audit
 
@@ -38,6 +37,4 @@ jobs:
           fail-on-gcs3: "false"
           fail-on-gcs4: "true"
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # For org-level audits use a dedicated read-only token instead:
-          # GITHUB_TOKEN: ${{ secrets.GC_AUDIT_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GC_AUDIT_TOKEN }}

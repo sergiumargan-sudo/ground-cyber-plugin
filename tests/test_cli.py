@@ -175,3 +175,28 @@ def test_redact_repo_names_flag(monkeypatch, workdir):
     assert code == EXIT_OK
     js = (workdir / "out" / "groundcyber-report.json").read_text()
     assert "acme/api" not in js
+
+
+def test_total_fetch_failure_exits_api_error_not_green(monkeypatch, workdir):
+    """An audit that retrieved nothing must not exit 0 (fail-closed)."""
+    from groundcyber.github_client import GitHubError
+
+    class FailingClient:
+        def __init__(self, token):
+            pass
+
+        def repo_alerts(self, repo):
+            raise GitHubError("HTTP 403: resource not accessible", 403)
+
+        repo_dependabot_alerts = repo_alerts
+        repo_code_scanning_alerts = repo_alerts
+        org_alerts = repo_alerts
+        org_dependabot_alerts = repo_alerts
+        org_code_scanning_alerts = repo_alerts
+
+    monkeypatch.setenv("GITHUB_TOKEN", "test-token")
+    monkeypatch.setattr(cli, "GitHubClient", FailingClient)
+    code = main(
+        ["audit", "github", "--repo", "acme/api", "--out-dir", str(workdir / "out")]
+    )
+    assert code == EXIT_API

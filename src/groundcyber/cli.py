@@ -248,6 +248,13 @@ def cmd_audit_github(args: argparse.Namespace) -> int:
     for error in result.errors:
         _say(f"warning: {error}")
 
+    if result.errors and result.total == 0:
+        _say(
+            "FAIL: no alerts could be retrieved from any source. The audit "
+            "is unverified, not clean (fail-closed)."
+        )
+        return EXIT_API
+
     if args.fail_on_gcs4 and result.count(GCS.ACTIVE_RISK) > 0:
         _say("FAIL: GCS-4 (active risk) findings present and --fail-on-gcs4 set.")
         return EXIT_FAIL_ON

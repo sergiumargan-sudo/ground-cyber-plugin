@@ -147,16 +147,18 @@ values and never modifies alerts. See
 
 | Scenario | Token | Permissions |
 |---|---|---|
-| Single repository in Actions | default `GITHUB_TOKEN` | workflow `permissions: security-events: read` (covers secret/code scanning; Dependabot alerts may additionally need a PAT) |
+| Single repository in Actions | fine-grained PAT stored as an Actions secret | the default `GITHUB_TOKEN` gets 403 from the secret-scanning and Dependabot alert APIs even with `security-events: read`; create a PAT with the alert read permissions and pass it as `GITHUB_TOKEN` to the action |
 | Single repository, local CLI | fine-grained PAT | repository permissions **Secret scanning alerts: read**, **Dependabot alerts: read**, **Code scanning alerts: read**, **Contents: read** (manifest verification) |
 | Organization-wide audit | fine-grained PAT or GitHub App token | the same alert read permissions, organization-wide |
 | Classic PAT alternative | classic PAT | `repo` + `security_events` scopes |
 
-**Limitation of the default `GITHUB_TOKEN`:** it is scoped to the repository
-the workflow runs in. Org-level audits (`--org` / the `org:` input) will
-return `403/404` with it. Create a fine-grained PAT or GitHub App token with
-organization-level secret-scanning read access, store it as an Actions
-secret, and pass it as `GITHUB_TOKEN` to the action.
+**Limitation of the default `GITHUB_TOKEN`:** it cannot read secret-scanning
+or Dependabot alerts at all (the API returns `403: Resource not accessible
+by integration`), and it is scoped to the workflow's repository. For any
+audit, create a fine-grained PAT with the alert read permissions (repo- or
+org-wide as needed), store it as an Actions secret, and pass it as
+`GITHUB_TOKEN` to the action. If the token cannot retrieve anything, the
+audit exits with an error rather than reporting a clean result.
 
 `groundcyber doctor` checks all of this before you run a real audit.
 
