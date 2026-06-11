@@ -1,0 +1,127 @@
+name: "Ground Cyber Closure Audit"
+description: >-
+  False-closure verification for GitHub Secret Scanning alerts. Read-only:
+  verifies whether closure evidence exists; never modifies alerts and never
+  prints raw secret values.
+author: "Ground Cyber"
+branding:
+  icon: "shield"
+  color: "gray-dark"
+
+inputs:
+  org:
+    description: "GitHub organization to audit (requires a token with org-level secret-scanning read)"
+    required: false
+    default: ""
+  repo:
+    description: "Repository to audit as owner/name. Defaults to the current repository."
+    required: false
+    default: ""
+  include-repo:
+    description: "Comma-separated glob patterns; only matching repos are audited"
+    required: false
+    default: ""
+  exclude-repo:
+    description: "Comma-separated glob patterns; matching repos are skipped"
+    required: false
+    default: ""
+  config:
+    description: "Path to a .groundcyber.yml in the checked-out repository"
+    required: false
+    default: ""
+  output:
+    description: "Comma-separated report formats: markdown,json,html"
+    required: false
+    default: "markdown,json"
+  out-dir:
+    description: "Directory the reports are written to"
+    required: false
+    default: "groundcyber-report"
+  redact-repo-names:
+    description: "Replace repository names with stable pseudonyms in reports"
+    required: false
+    default: "false"
+  fail-on-gcs3:
+    description: "Fail the workflow if any GCS-3 (false-closure risk) finding exists"
+    required: false
+    default: "false"
+  fail-on-gcs4:
+    description: "Fail the workflow if any GCS-4 (active risk) finding exists"
+    required: false
+    default: "true"
+  artifact-name:
+    description: "Name of the uploaded report artifact"
+    required: false
+    default: "groundcyber-report"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+
+    - name: Install groundcyber
+      shell: bash
+      run: pip install --quiet "${{ github.action_path }}"
+
+    - name: Run closure audit (read-only)
+      shell: bash
+      env:
+        GC_ORG: ${{ inputs.org }}
+        GC_REPO: ${{ inputs.repo }}
+        GC_INCLUDE: ${{ inputs.include-repo }}
+        GC_EXCLUDE: ${{ inputs.exclude-repo }}
+        GC_CONFIG: ${{ inputs.config }}
+        GC_OUTPUT: ${{ inputs.output }}
+        GC_OUT_DIR: ${{ inputs.out-dir }}
+        GC_REDACT: ${{ inputs.redact-repo-names }}
+        GC_FAIL3: ${{ inputs.fail-on-gcs3 }}
+        GC_FAIL4: ${{ inputs.fail-on-gcs4 }}
+      run: |
+        set -u
+        args=(audit github --output "$GC_OUTPUT" --out-dir "$GC_OUT_DIR")
+
+        if [ -n "$GC_ORG" ]; then
+          args+=(--org "$GC_ORG")
+        fi
+        if [ -n "$GC_REPO" ]; then
+          args+=(--repo "$GC_REPO")
+        elif [ -z "$GC_ORG" ]; then
+          args+=(--repo "$GITHUB_REPOSITORY")
+        fi
+        if [ -n "$GC_CONFIG" ]; then
+          args+=(--config "$GC_CONFIG")
+        fi
+        IFS=',' read -ra patterns <<< "$GC_INCLUDE"
+        for p in "${patterns[@]}"; do
+          [ -n "$p" ] && args+=(--include-repo "$p")
+        done
+        IFS=',' read -ra patterns <<< "$GC_EXCLUDE"
+        for p in "${patterns[@]}"; do
+          [ -n "$p" ] && args+=(--exclude-repo "$p")
+        done
+        [ "$GC_REDACT" = "true" ] && args+=(--redact-repo-names)
+        [ "$GC_FAIL3" = "true" ] && args+=(--fail-on-gcs3)
+        [ "$GC_FAIL4" = "true" ] && args+=(--fail-on-gcs4)
+
+        groundcyber "${args[@]}"
+
+    - name: Add report to job summary
+      if: always()
+      shell: bash
+      env:
+        GC_OUT_DIR: ${{ inputs.out-dir }}
+      run: |
+        if [ -f "$GC_OUT_DIR/groundcyber-report.md" ]; then
+          cat "$GC_OUT_DIR/groundcyber-report.md" >> "$GITHUB_STEP_SUMMARY"
+        fi
+
+    - name: Upload report artifact
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: ${{ inputs.out-dir }}
+        if-no-files-found: warn

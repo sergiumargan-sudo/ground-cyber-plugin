@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Ground Cyber Closure Report</title>
+<style>
+body{font-family:-apple-system,Segoe UI,sans-serif;margin:2rem;color:#1f2328}
+pre{background:#f6f8fa;padding:1rem;border-radius:6px}
+table{border-collapse:collapse;width:100%}
+td,th{border:1px solid #d0d7de;padding:.5rem;vertical-align:top;text-align:left}
+th{background:#f6f8fa}
+</style>
+</head>
+<body>
+<h1>Ground Cyber Closure Report</h1>
+<p><em>Closed is a status. Revoked is evidence. Unknown validity is not safe.</em></p>
+<pre>Ground Cyber Closure Report
+
+Total secret alerts scanned: 8
+Verified closed: 1
+Low residual risk: 1
+Provisional / unknown: 1
+False-closure risk: 3
+Active risk: 2
+
+Highest-risk finding:
+Alert #233 (GCS-4 Active risk): Provider validity is &#x27;active&#x27;: the credential is usable right now and the alert is open.</pre>
+<p>Scope: GitHub Secret Scanning alerts — organization &#x27;example-org&#x27;<br>
+Generated at: 2026-06-11T09:00:00Z · groundcyber v0.3.0</p>
+<h2>Findings</h2>
+<table>
+<tr><th>Alert</th><th>Repo</th><th>Secret type</th><th>State / resolution</th>
+<th>Validity</th><th>GCS</th><th>Closure confirmed</th><th>Reasoning</th></tr>
+<tr><td>#233</td><td>example-org/infra-terraform</td><td>Stripe API Key</td><td>open / —</td><td>active</td><td><strong style='color:#cf222e'>GCS-4</strong> Active risk</td><td>no</td><td>Provider validity is &#x27;active&#x27;: the credential is usable right now and the alert is open.<ul><li>Provider-side validity check reports the credential is ACTIVE.</li></ul><em>Next: Revoke or rotate the credential at the issuing provider immediately, then confirm validity flips to &#x27;inactive&#x27;.</em></td></tr><tr><td>#89</td><td>example-org/mobile-app</td><td>Stripe API Key</td><td>resolved / revoked</td><td>inactive</td><td><strong style='color:#cf222e'>GCS-4</strong> Active risk</td><td>no</td><td>Provider-side validity check confirms the credential is inactive. This is closure evidence, independent of the resolution label (&#x27;revoked&#x27;). Escalated to active risk: the same credential is active in another alert.<ul><li>Duplicate active exposure: the same credential (matched by hash) is active in another alert in scope.</li></ul><em>Next: Revoke or rotate the credential at the issuing provider; it is active in at least one other location.</em></td></tr><tr><td>#460</td><td>example-org/data-pipeline</td><td>npm Access Token</td><td>resolved / wont_fix</td><td>unknown</td><td><strong style='color:#bc4c00'>GCS-3</strong> False-closure risk</td><td>no</td><td>Alert was closed as &#x27;wont_fix&#x27;, but no provider-side inactive-validity evidence exists. A label is a status, not proof the credential is dead.<ul><li>Resolution label &#x27;wont_fix&#x27; is an administrative statement, not closure evidence.</li><li>No provider-side inactive-validity evidence was found (validity: &#x27;unknown&#x27;).</li><li>Resolution is older than 30 days and the evidence gap was never closed.</li></ul><em>Next: Verify at the issuing provider that the credential is revoked; if it cannot be proven dead, rotate it and re-check validity.</em></td></tr><tr><td>#210</td><td>example-org/infra-terraform</td><td>Slack API Token</td><td>resolved / false_positive</td><td>unknown</td><td><strong style='color:#bc4c00'>GCS-3</strong> False-closure risk</td><td>no</td><td>Alert was closed as &#x27;false_positive&#x27;, but no provider-side inactive-validity evidence exists. A label is a status, not proof the credential is dead.<ul><li>Resolution label &#x27;false_positive&#x27; is an administrative statement, not closure evidence.</li><li>No provider-side inactive-validity evidence was found (validity: &#x27;unknown&#x27;).</li><li>Resolution is older than 30 days and the evidence gap was never closed.</li></ul><em>Next: Verify at the issuing provider that the credential is revoked; if it cannot be proven dead, rotate it and re-check validity.</em></td></tr><tr><td>#1842</td><td>example-org/payments-api</td><td>AWS Access Key ID</td><td>resolved / used_in_tests</td><td>unknown</td><td><strong style='color:#bc4c00'>GCS-3</strong> False-closure risk</td><td>no</td><td>Alert was closed as &#x27;used_in_tests&#x27;, but no provider-side inactive-validity evidence exists. A label is a status, not proof the credential is dead.<ul><li>Resolution label &#x27;used_in_tests&#x27; is an administrative statement, not closure evidence.</li><li>No provider-side inactive-validity evidence was found (validity: &#x27;unknown&#x27;).</li><li>Resolution is older than 30 days and the evidence gap was never closed.</li></ul><em>Next: Verify at the issuing provider that the credential is revoked; if it cannot be proven dead, rotate it and re-check validity.</em></td></tr><tr><td>#88</td><td>example-org/mobile-app</td><td>Google API Key</td><td>open / —</td><td>unknown</td><td><strong style='color:#9a6700'>GCS-2</strong> Provisional / unknown</td><td>no</td><td>Open alert with no provider-side validity evidence. Unknown validity is not safe; the alert is provisional until proven inactive.<ul><li>No provider-side validity evidence (validity: &#x27;unknown&#x27;).</li></ul><em>Next: Determine whether the credential is live (provider validity check or manual verification); revoke/rotate if it is, then resolve with evidence.</em></td></tr><tr><td>#412</td><td>example-org/data-pipeline</td><td>Azure Storage Account Key</td><td>open / —</td><td>inactive</td><td><strong style='color:#4d7c0f'>GCS-1</strong> Low residual risk</td><td>no</td><td>Provider validity is &#x27;inactive&#x27; but the alert is still open. The credential appears dead; the alert workflow is unfinished.<ul><li>Alert remains open despite inactive validity.</li></ul><em>Next: Confirm the credential was rotated/revoked intentionally, then resolve the alert with that evidence on record.</em></td></tr><tr><td>#1901</td><td>example-org/payments-api</td><td>GitHub Personal Access Token</td><td>resolved / revoked</td><td>inactive</td><td><strong style='color:#1a7f37'>GCS-0</strong> Verified closed</td><td>yes</td><td>Provider-side validity check confirms the credential is inactive. This is closure evidence, independent of the resolution label (&#x27;revoked&#x27;).<ul></ul><em>Next: None. Closure is verified by provider evidence.</em></td></tr>
+</table>
+<h2>Methodology</h2><pre>Ground Cyber asks one question per alert: is the underlying credential
+proven dead, or merely marked resolved?
+
+1. Secret-scanning alerts are fetched with read-only GET requests.
+2. Any raw secret value in an API response is hashed (SHA-256) immediately
+   and the raw value is discarded. Hashes are used only to detect the same
+   credential appearing in multiple alerts.
+3. Each alert is scored with a deterministic rule table (no AI):
+   - GCS-0 (verified closed) requires provider-side validity == &quot;inactive&quot;.
+     Nothing else produces GCS-0.
+   - Resolution labels (revoked, used_in_tests, false_positive, wont_fix,
+     pattern_deleted, pattern_edited, ...) are administrative statements
+     and never count as closure evidence by themselves.
+   - Unknown or missing validity is never safe.
+   - If evidence cannot be retrieved, the alert fails closed to a
+     provisional (non-safe) state.
+   - A credential active in any alert escalates every other alert that
+     shares the same secret hash (duplicate active exposure).
+</pre>
+<h2>Security and privacy model</h2><pre>- Local-first: the audit runs where you invoke it; nothing is uploaded.
+- Read-only: only GitHub GET requests are issued. Alerts, repositories,
+  issues, and settings are never modified.
+- No raw secret storage: secret values are hashed with SHA-256 on receipt
+  and discarded.
+- No raw secret printing: all report text passes through a redaction
+  filter that replaces secret-shaped strings with hashed markers.
+- Human overrides and dismissals are treated as risk acceptance, not as
+  verified closure.
+</pre>
+<h2>Limitations</h2><pre>- Provider validity checks exist only for secret types GitHub actively
+  verifies; other types can never reach GCS-0 through this tool and will
+  surface as provisional or false-closure risk. That is by design:
+  unknown validity is not safe.
+- Validity reflects GitHub&#x27;s most recent check, which may lag a recent
+  revocation or reactivation.
+- A credential proven inactive may still have been used during its
+  exposure window; this tool verifies closure, not absence of past abuse.
+- Git history is not rewritten by resolving an alert: an exposed secret
+  remains in history until rotated and scrubbed.
+- Organization-level scans require a token with organization-wide secret
+  scanning read access; the default Actions GITHUB_TOKEN is repo-scoped.
+- Alerts GitHub never raised (undetected secret types, private patterns
+  not configured) are invisible to this audit.
+</pre>
+</body>
+</html>
